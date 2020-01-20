@@ -1,0 +1,87 @@
+<odoo>
+  <data>
+    <!-- Register payment from several invoices -->
+    <record id="view_account_payment_from_invoices" model="ir.ui.view">
+        <field name="name">mip.account.register.payments.wizard</field>
+        <field name="model">mip.account.register.payments</field>
+        <field name="arch" type="xml">
+            <form string="Register Payment">
+                <field name="payment_type" invisible="1"/>
+                <field name="partner_type" invisible="1"/>
+                <field name="partner_id" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="journal_id" widget="selection"/>
+                        <field name="hide_payment_method" invisible="1"/>
+                        <field name="payment_method_id" widget="radio" attrs="{'invisible': [('hide_payment_method', '=', True)]}"/>
+                        <field name="payment_method_code" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="multi" invisible="1"/>
+                        <field name="amount"/>
+                    </group>
+                    <group>
+                        <field name="payment_date"/>
+                        <field name="communication"/>
+                    </group>
+                </group>
+                <group attrs="{'invisible': [('payment_difference', '=', 0.0)]}">
+                    <label for="payment_difference"/>
+                    <div>
+                        <field name="payment_difference"/>
+                        <field name="payment_difference_handling" widget="radio" nolabel="1"/>
+                        <div attrs="{'invisible': [('payment_difference_handling','=','open')]}">
+                            <label for="writeoff_account_id" class="oe_edit_only" string="Post Difference In"/>
+                            <field name="writeoff_account_id" string="Post Difference In" attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+                            <label string="Journal" attrs="{'invisible': [('amount', '!=', 0)]}"/>
+                            <field name="journal_id" string="Journal" widget="selection" attrs="{'invisible': [('amount', '!=', 0)]}"/>
+                            <label for="writeoff_label" class="oe_edit_only" string="Label"/>
+                            <field name="writeoff_label" attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+                        </div>
+                    </div>
+                </group>
+                <notebook>
+                  <page string="Customer Invoices">
+                    <field name="invoice_ids">
+                      <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" string="Invoice">
+                        <!-- <field name="partner_id" groups="base.group_user" string="Customer"/> -->
+                        <field name="state"/>
+                        <field name="number"/>
+                        <field name="date_invoice"/>
+                        <field name="commercial_partner_id" invisible="1"/>
+                        <field name="reference" invisible="1"/>
+                        <field name="name" invisible="1"/>
+                        <field name="journal_id" invisible="1"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        <!-- <field name="user_id"/> -->
+                        <field name="date_due"/>
+                        <!-- <field name="origin"/> -->
+                        <field name="amount_total_signed" string="Total" sum="Total"/>
+                        <field name="residual_signed" string="Amount Due" sum="Amount Due"/>
+
+                        <field name="currency_id" invisible="1"/>
+                        <field name="company_currency_id" invisible="1"/>
+                        <field name="type" invisible="context.get('type',True)"/>
+                      </tree>
+                    </field>
+                  </page>
+                </notebook>
+                <footer>
+                    <button string='Validate' name="create_payments" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <act_window
+        id="action_mip_account_payment_from_invoices"
+        name="Multiple Invoice Payment"
+        res_model="mip.account.register.payments"
+        src_model="account.invoice"
+        view_mode="form"
+        multi="True"
+        target="new"
+        key2="client_action_multi"
+    />
+  </data>
+</odoo>
